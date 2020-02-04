@@ -10,7 +10,7 @@ The .jar file is available in the /releases directory, this can be loaded in thr
 <li>select scope
 <li>Test as normal, observe the Sample Extract column for matches
 
-#Acknowledgements
+# Acknowledgements
 Author: Jack Jarvis, NCC Group <br/>
 Developed using IntelliJ IDE and the Gradle Build Tool.
 
