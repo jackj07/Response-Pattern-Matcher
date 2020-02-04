@@ -6,11 +6,13 @@ The .jar file is available in the /releases directory, this can be loaded in thr
 <ol>
 <li>When the extension is loaded in you will see a Scraper tab, by default pre-existing payloads exist that will be pattern matched against every response that goes through Burp. This includes tools such as the Scanner.</li>
 <li>Configure these payloads accordingly, these are quite generic so for an assessment you may want to add project specific keywords and regular expressions.</li>
-<li>The is regex check box indicates whether to search the responses for the provided Pattern using Java's Pattern Matcher functionality. A good example is available [here](vogella.com/tutorials/JavaRegularExpressions/article.html "Regex in Java").</li>
+<li>The is regex check box indicates whether to search the responses for the provided Pattern using Java's Pattern Matcher functionality. A good example is available below.</li>
 <li>Use the "In Scope Only" checkbox to search only within responses that are in Scope defined under <i>Target > Scope</i>.</li>
 <li>For best results, define your scope, configure your payloads, and <b>then</b> start testing. Burp's Scanner will kick in and push everything through Scraper too so you get a Scrape on the full sitemap.</li>
 <li><b>WARNING</b> do not set /* to be regex, this will most likely crash burp as it matches on everything.</li>
 </ol>
+
+[Java regex tutorial](http://vogella.com/tutorials/JavaRegularExpressions/article.html)
 
 # Requirements
 Built using Java 12.0.2, runs on Burp v2.
