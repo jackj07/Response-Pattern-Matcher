@@ -196,6 +196,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                         int row = payloads.size();
                         payloads.add(new Payload(input, false));
                         payloadsTableModel.fireTableRowsInserted(row, row);
+                        textField_input.setText("");
                     }
                 }
             });
