@@ -4,14 +4,20 @@ Adds extensibility to Burp by using a list of payloads to pattern match on HTTP 
 # Running
 The .jar file is available in the /releases directory, this can be loaded in through Burp Extender.
 <ol>
-<li>On the Scraper tab configure the payloads
-<li>configure regex (explain Java regex)
-<li>configure your scope
-<li>select scope
-<li>Test as normal, observe the Sample Extract column for matches
+<li>When the extension is loaded in you will see a Scraper tab, by default pre-existing payloads
+ exist that will be pattern matched against every response that goes through Burp. This includes 
+ responses through other tools in Burp such as the Scanner.</li>
+ 
+ for best results, configure scope and leave it running passivel
+ 
+<li>configure regex (explain Java regex)</li>
+<li>configure your scope</li>
+<li>select scope</li>
+<li>Test as normal, observe the Sample Extract column for matches</li>
+</ol>
 
 # Acknowledgements
-Author: Jack Jarvis, NCC Group <br/>
+<b>Author</b>: Jack Jarvis, NCC Group <br/>
 Developed using IntelliJ IDE and the Gradle Build Tool.
 
 For further Burp Extension development please refer to:<br />

@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="Scraper:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/Scraper_jar</output-path>
-    <root id="archive" name="Scraper.jar">
-      <element id="module-output" name="Scraper" />
-    </root>
-  </artifact>
-</component>
