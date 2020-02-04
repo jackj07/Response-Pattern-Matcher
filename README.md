@@ -1,20 +1,19 @@
 # Scraper
 Adds extensibility to Burp by using a list of payloads to pattern match on HTTP responses highlighting interesting and potentially vulnerable areas. Can be used to search HTML source code for interesting keywords, developer comments, passwords, admin panel links, hidden form fields, and more.
 
-# Running
+# Usage
 The .jar file is available in the /releases directory, this can be loaded in through Burp Extender.
 <ol>
-<li>When the extension is loaded in you will see a Scraper tab, by default pre-existing payloads
- exist that will be pattern matched against every response that goes through Burp. This includes 
- responses through other tools in Burp such as the Scanner.</li>
- 
- for best results, configure scope and leave it running passivel
- 
-<li>configure regex (explain Java regex)</li>
-<li>configure your scope</li>
-<li>select scope</li>
-<li>Test as normal, observe the Sample Extract column for matches</li>
+<li>When the extension is loaded in you will see a Scraper tab, by default pre-existing payloads exist that will be pattern matched against every response that goes through Burp. This includes tools such as the Scanner.</li>
+<li>Configure these payloads accordingly, these are quite generic so for an assessment you may want to add project specific keywords and regular expressions.</li>
+<li>The is regex check box indicates whether to search the responses for the provided Pattern using Java's Pattern Matcher functionality. A good example is available [here](vogella.com/tutorials/JavaRegularExpressions/article.html "Regex in Java").</li>
+<li>Use the "In Scope Only" checkbox to search only within responses that are in Scope defined under <i>Target > Scope</i>.</li>
+<li>For best results, define your scope, configure your payloads, and <b>then</b> start testing. Burp's Scanner will kick in and push everything through Scraper too so you get a Scrape on the full sitemap.</li>
+<li><b>WARNING</b> do not set /* to be regex, this will most likely crash burp as it matches on everything.</li>
 </ol>
+
+# Requirements
+Built using Java 12.0.2, runs on Burp v2.
 
 # Acknowledgements
 <b>Author</b>: Jack Jarvis, NCC Group <br/>
