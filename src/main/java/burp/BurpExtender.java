@@ -20,7 +20,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
     protected static PrintWriter sterror;
 
     //Scope
-    private Boolean inScopeOnly = false;
+    private Boolean inScopeOnly;
 
     //Main Splitpane
     JSplitPane splitPane_main;
@@ -168,6 +168,8 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
 
             //Checkbox is in scope
             JCheckBox checkBox_isInScope = new JCheckBox("In Scope Only");
+            checkBox_isInScope.setSelected(true);
+            inScopeOnly = true;
             checkBox_isInScope.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
