@@ -16,7 +16,7 @@ public class PayloadsTableModel extends AbstractTableModel {
     }
 
     @Override
-    public int getColumnCount() { return 2; }
+    public int getColumnCount() { return 3; }
 
     @Override
     public String getColumnName(int columnIndex)
@@ -27,6 +27,8 @@ public class PayloadsTableModel extends AbstractTableModel {
                 return "Payload";
             case 1:
                 return "Is Regex";
+            case 2:
+                return "Active";
             default:
                 return "";
         }
@@ -40,6 +42,8 @@ public class PayloadsTableModel extends AbstractTableModel {
                 return String.class;
             case 1:
                 return Boolean.class;
+            case 2:
+                return Boolean.class;
             default:
                 return String.class;
         }
@@ -48,6 +52,9 @@ public class PayloadsTableModel extends AbstractTableModel {
     @Override
     public boolean isCellEditable(int row, int col) {
         if (col == 1) {
+            if(payloads.get(row).content.equals("/*")) return false;
+            return true;
+        } else if(col == 2) {
             return true;
         } else {
             return false;
@@ -61,6 +68,8 @@ public class PayloadsTableModel extends AbstractTableModel {
                 return payloads.get(rowIndex).content;
             case 1:
                 return payloads.get(rowIndex).isRegex;
+            case 2:
+                return payloads.get(rowIndex).active;
             default:
                 return payloads.get(rowIndex).content;
         }
@@ -69,12 +78,22 @@ public class PayloadsTableModel extends AbstractTableModel {
     @Override
     public void setValueAt(Object value, int row, int col) {
         super.setValueAt(value, row, col);
+
         if (col == 1) {
             if ((Boolean) this.getValueAt(row, col) == true) {
-                payloads.set(row, new Payload(payloads.get(row).content,false));
+                payloads.set(row, new Payload(payloads.get(row).content,false, payloads.get(row).active));
             }
             else if ((Boolean) this.getValueAt(row, col) == false) {
-                payloads.set(row, new Payload(payloads.get(row).content,true));
+                payloads.set(row, new Payload(payloads.get(row).content,true, payloads.get(row).active));
+            }
+        }
+
+        if (col == 2){
+            if ((Boolean) this.getValueAt(row, col) == true) {
+                payloads.set(row, new Payload(payloads.get(row).content, payloads.get(row).isRegex, false));
+            }
+            else if ((Boolean) this.getValueAt(row, col) == false) {
+                payloads.set(row, new Payload(payloads.get(row).content, payloads.get(row).isRegex, true));
             }
         }
     }

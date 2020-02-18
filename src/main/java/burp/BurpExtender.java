@@ -22,6 +22,9 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
     //Scope
     private Boolean inScopeOnly;
 
+    //Checkbox needs to be accessible by setDefaults()
+    JCheckBox checkBox_isInScope;
+
     //Main Splitpane
     JSplitPane splitPane_main;
 
@@ -81,7 +84,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
             // user input section (top half of top half)
             JPanel panel_input_outer = new JPanel(new FlowLayout(FlowLayout.CENTER));
             JPanel panel_input = new JPanel();
-            panel_input.setPreferredSize(new Dimension(400, 350));
+            panel_input.setPreferredSize(new Dimension(500, 350));
             panel_input.setLayout(new BoxLayout(panel_input, BoxLayout.PAGE_AXIS));
 
             // User Input Label
@@ -94,8 +97,12 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
             // Payloads Input
             JPanel panel_table_payloads = new JPanel(new FlowLayout(FlowLayout.CENTER));
             table_payloads = new PayloadTable(payloadsTableModel, contentController);
+            table_payloads.getColumnModel().getColumn(0).setPreferredWidth(220);
+            table_payloads.getColumnModel().getColumn(1).setPreferredWidth(35);
+            table_payloads.getColumnModel().getColumn(2).setPreferredWidth(35);
+            table_payloads.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
             JScrollPane scrollPane_payloads = new JScrollPane(table_payloads);
-            scrollPane_payloads.setPreferredSize(new Dimension(350, 180));
+            scrollPane_payloads.setPreferredSize(new Dimension(400, 180));
             panel_table_payloads.add(scrollPane_payloads);
             panel_input.add(panel_table_payloads);
 
@@ -116,8 +123,9 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
 
                                 reader = new BufferedReader(new FileReader(filePath));
                                 for(String line; (line = reader.readLine()) != null;) {
+                                    if(line == null || line.equals(""))return;//prevent empty items being added
                                     int row = payloads.size();
-                                    payloads.add(new Payload(line, false));
+                                    payloads.add(new Payload(line, false, true));
                                     payloadsTableModel.fireTableRowsInserted(row, row);
                                 }
                             } catch (IOException ex) {
@@ -166,8 +174,18 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
             });
             panel_buttons.add(button_clear);
 
+            //Button Restore Defaults
+            JButton button_restoreDefaults = new JButton("Restore Defaults");
+            button_restoreDefaults.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setDefaults();
+                }
+            });
+            panel_buttons.add(button_restoreDefaults);
+
             //Checkbox is in scope
-            JCheckBox checkBox_isInScope = new JCheckBox("In Scope Only");
+            checkBox_isInScope = new JCheckBox("In Scope Only");
             checkBox_isInScope.setSelected(true);
             inScopeOnly = true;
             checkBox_isInScope.addItemListener(new ItemListener() {
@@ -196,7 +214,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                     String input = textField_input.getText();
                     if(input != null && !input.isEmpty()){
                         int row = payloads.size();
-                        payloads.add(new Payload(input, false));
+                        payloads.add(new Payload(input, false, true));
                         payloadsTableModel.fireTableRowsInserted(row, row);
                         textField_input.setText("");
                     }
@@ -247,24 +265,34 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
             callbacks.registerHttpListener(BurpExtender.this);
         });
 
-        //Default payloads
-        payloads.add(new Payload("admin", false));
-        payloads.add(new Payload("password", false));
-        payloads.add(new Payload("passcode", false));
-        payloads.add(new Payload("port.{0,7}\\d+", true));
-        payloads.add(new Payload("sql", false));
-        payloads.add(new Payload("<!--", false));
-        payloads.add(new Payload("/*", false));
-        payloads.add(new Payload("todo", false));
-        payloads.add(new Payload("secret", false));
-        payloads.add(new Payload("//# sourceURL", false));
-        payloads.add(new Payload("//# sourceMappingURL", false));
-        payloads.add(new Payload("api", false));
-        payloads.add(new Payload("private", false));
-        payloads.add(new Payload("debug", false));
+        setDefaults();
 
         //Loading complete
         stdout.println("Scraper Extension Loaded");
+    }
+
+    private void setDefaults(){
+        payloads.clear();
+
+        //Default payloads
+        payloads.add(new Payload("admin", false, true));
+        payloads.add(new Payload("password", false, true));
+        payloads.add(new Payload("passcode", false, true));
+        payloads.add(new Payload("port.{0,7}\\d+", true, true));
+        payloads.add(new Payload("sql", false, true));
+        payloads.add(new Payload("<!--", false, true));
+        payloads.add(new Payload("/*", false, true));
+        payloads.add(new Payload("todo", false, true));
+        payloads.add(new Payload("secret", false, true));
+        payloads.add(new Payload("//# sourceURL", false, true));
+        payloads.add(new Payload("//# sourceMappingURL", false, true));
+        payloads.add(new Payload("api", false, true));
+        payloads.add(new Payload("private", false, true));
+        payloads.add(new Payload("debug", false, true));
+
+        checkBox_isInScope.setSelected(true);
+        inScopeOnly=true;
+        payloadsTableModel.fireTableDataChanged();
     }
 
     //

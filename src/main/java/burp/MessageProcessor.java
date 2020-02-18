@@ -47,34 +47,36 @@ public class MessageProcessor implements Runnable {
                     IHttpRequestResponsePersisted responsePersisted = BurpExtender.callbacks.saveBuffersToTempFiles(messageInfo);
 
                     for (Payload payload : payloads) {
-                        Boolean isRegex = payload.isRegex;
-                        String payloadContent = payload.content;
+                        if(payload.active) {//Only use the payload if it is active
+                            Boolean isRegex = payload.isRegex;
+                            String payloadContent = payload.content;
 
-                        if (!isRegex)
-                            payloadContent = Pattern.quote(payloadContent);//Take as literal string, not a search pattern.
-                        Pattern pattern = Pattern.compile(payloadContent, Pattern.CASE_INSENSITIVE);
-                        Matcher matcher = pattern.matcher(responseAsString);
+                            if (!isRegex)
+                                payloadContent = Pattern.quote(payloadContent);//Take as literal string, not a search pattern.
+                            Pattern pattern = Pattern.compile(payloadContent, Pattern.CASE_INSENSITIVE);
+                            Matcher matcher = pattern.matcher(responseAsString);
 
-                        while (matcher.find()) {
-                            String extract = "";
-                            try {
-                                extract = responseAsString.substring(matcher.start() - 30, matcher.end() + 30);
-                            } catch (StringIndexOutOfBoundsException ex) {
-                                //Only want to do this when OOB Exception is thrown following Extraction.
-                                //Too much overhead to do it for every response.
-                                extract = responseAsString.substring(
-                                        getMaxStartIndex(responseAsString, matcher.start(), matcher.end()),
-                                        getMaxEndIndex(responseAsString, matcher.start(), matcher.end()));
+                            while (matcher.find()) {
+                                String extract = "";
+                                try {
+                                    extract = responseAsString.substring(matcher.start() - 30, matcher.end() + 30);
+                                } catch (StringIndexOutOfBoundsException ex) {
+                                    //Only want to do this when OOB Exception is thrown following Extraction.
+                                    //Too much overhead to do it for every response.
+                                    extract = responseAsString.substring(
+                                            getMaxStartIndex(responseAsString, matcher.start(), matcher.end()),
+                                            getMaxEndIndex(responseAsString, matcher.start(), matcher.end()));
+                                }
+
+                                //Update result table with a result
+                                latestResults.add(new ResultEntry(
+                                        0,
+                                        toolFlag,
+                                        url,
+                                        responsePersisted,
+                                        extract,
+                                        payload.content));
                             }
-
-                            //Update result table with a result
-                            latestResults.add(new ResultEntry(
-                                    0,
-                                    toolFlag,
-                                    url,
-                                    responsePersisted,
-                                    extract,
-                                    payload.content));
                         }
                     }
                     if (latestResults.size() > 0) {
