@@ -59,7 +59,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
         helpers = callbacks.getHelpers();
 
         // set our extension name
-        callbacks.setExtensionName("Scraper");
+        callbacks.setExtensionName("Response Pattern Matcher");
 
         // create our UI
         SwingUtilities.invokeLater(() -> {
@@ -268,7 +268,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
         setDefaults();
 
         //Loading complete
-        stdout.println("Scraper Extension Loaded");
+        stdout.println("Extension Loaded Successfully");
     }
 
     private void setDefaults(){
@@ -300,7 +300,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
     //
     @Override
     public String getTabCaption(){
-        return "Scraper";
+        return "Response Pattern Matcher";
     }
 
     @Override
@@ -337,9 +337,9 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
 
     @Override
     public void extensionUnloaded() {
-        stdout.println("Scraper unloaded");
-
         //Close Thread Pool
         service.shutdownNow();
+
+        stdout.println("Extension Unloaded Successfully");
     }
 }
