@@ -15,14 +15,12 @@ public class MessageProcessor implements Runnable {
     private List<Payload> payloads;
     private List<ResultEntry> results;
     private ResultsTableModel resultsTableModel;
-    private ResultTable table_Results;
 
     public MessageProcessor(int toolFlag, IHttpRequestResponse messageInfo,
                             boolean inScopeOnly, boolean messageIsRequest,
                             List<Payload> payloads,
                             List<ResultEntry> results,
-                            ResultsTableModel resultsTableModel,
-                            ResultTable table_Results) {
+                            ResultsTableModel resultsTableModel) {
         this.toolFlag = toolFlag;
         this.messageInfo = messageInfo;
         this.inScopeOnly = inScopeOnly;
@@ -30,7 +28,6 @@ public class MessageProcessor implements Runnable {
         this.payloads = payloads;
         this.results = results;
         this.resultsTableModel = resultsTableModel;
-        this.table_Results = table_Results;
     }
 
     @Override
@@ -87,7 +84,6 @@ public class MessageProcessor implements Runnable {
                                     results.add(result);
                                     int row = results.size() - 1;
                                     resultsTableModel.fireTableRowsInserted(row, row);//Have to add 1 by 1 to keep model and view aligned to prevent IOOBException
-                                    table_Results.repaint();
                                 }
                             }catch(Exception e){
                                 BurpExtender.sterror.println("An exception occurred when adding Results");

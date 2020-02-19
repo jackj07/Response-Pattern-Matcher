@@ -265,7 +265,11 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
             callbacks.registerHttpListener(BurpExtender.this);
         });
 
-        setDefaults();
+        try {
+            setDefaults();
+        }catch(NullPointerException e){
+            //Catch null pointer exception here as some objs in setDefaults() may not have been initialised yet
+        }
 
         //Loading complete
         stdout.println("Extension Loaded Successfully");
@@ -313,7 +317,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
     //
     @Override
     public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo){
-        service.execute(new MessageProcessor(toolFlag, messageInfo, inScopeOnly, messageIsRequest, payloads, results, resultsTableModel, table_Results));
+        service.execute(new MessageProcessor(toolFlag, messageInfo, inScopeOnly, messageIsRequest, payloads, results, resultsTableModel));
     }
 
     //
