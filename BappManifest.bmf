@@ -1,0 +1,12 @@
+Uuid: a79caf7c5d3d4b54b66f84f27398afb6
+ExtensionType: 1
+Name: Response Pattern Matcher
+RepoName: response-pattern-matcher
+ScreenVersion: 1.0
+SerialVersion: 1
+MinPlatformVersion: 0
+ProOnly: False
+Author: JackJ07
+ShortDescription: Uses a list of payloads to pattern match on HTTP responses highlighting interesting and potentially vulnerable areas. 
+EntryPoint: releases/Response Pattern Matcher.jar
+BuildCommand: gradle jar

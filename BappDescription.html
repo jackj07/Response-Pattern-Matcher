@@ -1,0 +1,13 @@
+<p>Description</p>
+<p>Adds extensibility to Burp by using a list of payloads to pattern match on HTTP responses highlighting interesting and potentially vulnerable areas. 
+Can be used to search HTML source code for interesting keywords, developer comments, passwords, admin panel links, hidden form fields, and more.</p>
+<p>Usage</p>
+<ol>
+	<li>When the extension is loaded in you will see a Response Pattern Matcher tab, by default pre-existing payloads exist that will be pattern matched against every response that goes through Burp. This includes tools such as the Scanner.</li>
+	<li>Configure these payloads accordingly, these are quite generic so for an assessment you may want to add project specific keywords and regular expressions.</li>
+	<li>The &quot;is regex&quot; check box indicates whether to search the responses for the provided Pattern using Java's Pattern Matcher functionality</li>
+	<li>The &quot;active&quot; check box indicates whether the payload will be searched for in each response. Uncheck this to disable the payload.</li>
+	<li>Use the &quot;In Scope Only&quot; checkbox to search only within responses that are in Scope defined under Target > Scope.</li>
+	<li>For best results, define your scope, configure your payloads, and then start testing. Burp's Scanner will kick in and push everything through the Response Pattern Matcher too so the tool searches the full sitemap.</li>
+</ol>
+<p><strong>Note</strong> /* cannot be set to be regex, this will most likely crash burp as it matches on everything.</p>
