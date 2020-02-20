@@ -263,16 +263,10 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
 
             // register ourselves as an HTTP listener
             callbacks.registerHttpListener(BurpExtender.this);
+
+            setDefaults(); //Needs to be called within this block after everything has been setup
+            stdout.println("Extension Loaded Successfully");
         });
-
-        try {
-            setDefaults();
-        }catch(NullPointerException e){
-            //Catch null pointer exception here as some objs in setDefaults() may not have been initialised yet
-        }
-
-        //Loading complete
-        stdout.println("Extension Loaded Successfully");
     }
 
     private void setDefaults(){
