@@ -123,7 +123,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
 
                                 reader = new BufferedReader(new FileReader(filePath));
                                 for(String line; (line = reader.readLine()) != null;) {
-                                    if(line == null || line.equals(""))return;//prevent empty items being added
+                                    if(line == null || line.equals(""))continue;//prevent empty items being added
                                     int row = payloads.size();
                                     payloads.add(new Payload(line, false, true));
                                     payloadsTableModel.fireTableRowsInserted(row, row);
