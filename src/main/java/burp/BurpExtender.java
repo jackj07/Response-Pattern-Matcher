@@ -1,5 +1,8 @@
 package burp;
 
+import com.coreyd97.BurpExtenderUtilities.*;
+import com.google.gson.reflect.TypeToken;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,20 +32,25 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
     JSplitPane splitPane_main;
 
     //Threading and sync'd lists
-    private List<Payload> payloads = Collections.synchronizedList(new ArrayList<Payload>());
+    private List<Payload> payloads;
     private List<ResultEntry> results = Collections.synchronizedList(new ArrayList<ResultEntry>());
     private int threadCount = Runtime.getRuntime().availableProcessors();
     private ExecutorService service = Executors.newFixedThreadPool(threadCount);
 
     //Tables and table models
     private ResultsTableModel resultsTableModel = new ResultsTableModel(results);
-    private PayloadsTableModel payloadsTableModel = new PayloadsTableModel(payloads);
+    private PayloadsTableModel payloadsTableModel;
     private ResultTable table_Results;
     private PayloadTable table_payloads;
 
     //Controller class (passed to tables)
     private ContentController contentController = new ContentController();//request, response, and selected rows in tables
 
+    //BurpExtenderUtilities (Credit: CoreyD97) used to save configs
+    private Preferences prefs;
+
+    //If this is run for the first time
+    private Boolean firstRun;
     //
     // implement IBurpExtender
     //
@@ -57,6 +65,22 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
 
         // obtain an extension helpers object
         helpers = callbacks.getHelpers();
+
+        //Define the preferences objects
+        prefs = new Preferences("Response Pattern Matcher", new DefaultGsonProvider(), callbacks);
+        prefs.registerSetting("Payloads", new TypeToken<List<Payload>>(){}.getType(), Preferences.Visibility.GLOBAL);
+        prefs.registerSetting("In Scope Only", new TypeToken<Boolean>(){}.getType(), Preferences.Visibility.GLOBAL);
+        prefs.registerSetting("First Run", new TypeToken<Boolean>(){}.getType(), Preferences.Visibility.GLOBAL);
+
+        //Get the saved payloads from the Preferences object
+        if(prefs.getSetting("Payloads") == null){
+            //If you're running for the first time prefs will set payloads to null
+            payloads = Collections.synchronizedList(new ArrayList<Payload>());
+        }else {
+            payloads = Collections.synchronizedList(prefs.getSetting("Payloads"));
+        }
+
+        payloadsTableModel = new PayloadsTableModel(payloads, prefs);
 
         // set our extension name
         callbacks.setExtensionName("Response Pattern Matcher");
@@ -140,6 +164,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                                         sterror.println(ex2.getMessage());
                                     }
                                 }
+                                prefs.setSetting("Payloads", payloads);
                             }
                         } else {
                             stdout.println("File load cancelled");
@@ -158,6 +183,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                         payloads.remove(contentController.getSelectedPayloadRow());
                         payloadsTableModel.fireTableRowsDeleted(contentController.getSelectedPayloadRow(), contentController.getSelectedPayloadRow());
                         contentController.setSelectedPayloadRow(-1);
+                        prefs.setSetting("Payloads", payloads);
                     }
                 }
             });
@@ -170,6 +196,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                     int row = payloads.size();
                     payloads.clear();
                     payloadsTableModel.fireTableRowsDeleted(0,row);
+                    prefs.setSetting("Payloads", payloads);
                 }
             });
             panel_buttons.add(button_clear);
@@ -179,22 +206,24 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
             button_restoreDefaults.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    setDefaults();
+                    restoreDefaults();
                 }
             });
             panel_buttons.add(button_restoreDefaults);
 
             //Checkbox is in scope
-            checkBox_isInScope = new JCheckBox("In Scope Only");
-            checkBox_isInScope.setSelected(true);
-            inScopeOnly = true;
+            inScopeOnly = prefs.getSetting("In Scope Only");
+            if(inScopeOnly == null)inScopeOnly = true;
+            checkBox_isInScope = new JCheckBox("In Scope Only", inScopeOnly);
             checkBox_isInScope.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
                     if(e.getStateChange() == ItemEvent.SELECTED) {//checkbox has been selected
                         inScopeOnly = true;
+                        prefs.setSetting("In Scope Only", inScopeOnly);
                     } else {
                         inScopeOnly = false;
+                        prefs.setSetting("In Scope Only", inScopeOnly);
                     };
                 }
             });
@@ -217,6 +246,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                         payloads.add(new Payload(input, false, true));
                         payloadsTableModel.fireTableRowsInserted(row, row);
                         textField_input.setText("");
+                        prefs.setSetting("Payloads", payloads);
                     }
                 }
             });
@@ -264,15 +294,20 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
             // register ourselves as an HTTP listener
             callbacks.registerHttpListener(BurpExtender.this);
 
-            setDefaults(); //Needs to be called within this block after everything has been setup
+            //Setup configs for first time usage
+            firstRun = prefs.getSetting("First Run");
+            if(firstRun == null){
+                restoreDefaults();
+                prefs.setSetting("First Run", false);
+            }
+
             stdout.println("Extension Loaded Successfully");
         });
     }
 
-    private void setDefaults(){
-        payloads.clear();
-
+    private void restoreDefaults(){
         //Default payloads
+        payloads.clear();
         payloads.add(new Payload("admin", false, true));
         payloads.add(new Payload("password", false, true));
         payloads.add(new Payload("passcode", false, true));
@@ -287,10 +322,12 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
         payloads.add(new Payload("api", false, true));
         payloads.add(new Payload("private", false, true));
         payloads.add(new Payload("debug", false, true));
-
-        checkBox_isInScope.setSelected(true);
-        inScopeOnly=true;
         payloadsTableModel.fireTableDataChanged();
+        prefs.setSetting("Payloads", payloads);
+
+        inScopeOnly = true;
+        prefs.setSetting("In Scope Only", inScopeOnly);
+        checkBox_isInScope.setSelected(true);
     }
 
     //

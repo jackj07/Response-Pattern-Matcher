@@ -6,15 +6,20 @@
  */
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'idea'
 
 sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    maven {
+        url "https://jitpack.io"
+    }
 }
 
 dependencies {
     compile 'net.portswigger.burp.extender:burp-extender-api:1.7.22'
+    compile 'com.github.CoreyD97:BurpExtenderUtilities:409993f66a0779ce469d4226fa6d4f4de12e1495'
     testCompile files('C:\\Program Files\\BurpSuitePro\\burpsuite_pro.jar')
 }
 
