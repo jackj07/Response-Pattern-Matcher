@@ -20,10 +20,18 @@ public class ResultTable extends JTable
                 IHttpRequestResponsePersisted requestResponsePersisted = resultsEntry.requestResponse;
 
                 //This guard is required because responseViewer.setMessage() is very resource intensive and causes Burp to slow down a lot on huge responses
-                if(contentController.getCurrentlyDisplayedItem() == null || contentController.getCurrentlyDisplayedItem() != requestResponsePersisted)
+                if(contentController.getCurrentlyDisplayedItem() == null || contentController.getCurrentlyDisplayedItem() != requestResponsePersisted
+                        || contentController.getRequestViewer().getMessage().length == 0)
                 {
                     contentController.getRequestViewer().setMessage(requestResponsePersisted.getRequest(), true);
-                    contentController.getResponseViewer().setMessage(requestResponsePersisted.getResponse(), false);
+
+                    //The response sometimes doesn't exist for some requests. Guard here to prevent null pointer
+                    if(requestResponsePersisted.getResponse() != null){
+                        contentController.getResponseViewer().setMessage(requestResponsePersisted.getResponse(), false);
+                    }else{
+                        contentController.getResponseViewer().setMessage(new byte[0], false);
+                    }
+
                     contentController.setCurrentlyDisplayedItem(requestResponsePersisted);
                 }
             }

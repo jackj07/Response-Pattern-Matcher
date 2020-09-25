@@ -4,16 +4,14 @@ import com.coreyd97.BurpExtenderUtilities.*;
 import com.google.gson.reflect.TypeToken;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
 
 public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessageEditorController, IExtensionStateListener {
     //Static Burp objects
@@ -24,23 +22,30 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
 
     //Scope
     private Boolean inScopeOnly;
+    private Boolean matchOnResponses;
+    private Boolean matchOnRequests;
 
-    //Checkbox needs to be accessible by setDefaults()
+    //Checkboxes need to be accessible for setDefaults()
     JCheckBox checkBox_isInScope;
+    JCheckBox checkBox_matchOnResponses;
+    JCheckBox checkBox_matchOnRequests;
 
-    //Main Splitpane
-    JSplitPane splitPane_main;
+    //Main outer component
+    JTabbedPane tabs_outer;
 
     //Threading and sync'd lists
     private List<Payload> payloads;
-    private List<ResultEntry> results = Collections.synchronizedList(new ArrayList<ResultEntry>());
+    private List<ResultEntry> results_responses = Collections.synchronizedList(new ArrayList<ResultEntry>());
+    private List<ResultEntry> results_requests = Collections.synchronizedList(new ArrayList<ResultEntry>());
     private int threadCount = Runtime.getRuntime().availableProcessors();
     private ExecutorService service = Executors.newFixedThreadPool(threadCount);
 
     //Tables and table models
-    private ResultsTableModel resultsTableModel = new ResultsTableModel(results);
+    private ResultsTableModel resultsTableModel_responses = new ResultsTableModel(results_responses);
+    private ResultsTableModel resultsTableModel_requests = new ResultsTableModel(results_requests);
     private PayloadsTableModel payloadsTableModel;
-    private ResultTable table_Results;
+    private ResultTable table_results_responses;
+    private ResultTable table_results_requests;
     private PayloadTable table_payloads;
 
     //Controller class (passed to tables)
@@ -49,8 +54,9 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
     //BurpExtenderUtilities (Credit: CoreyD97) used to save configs
     private Preferences prefs;
 
-    //If this is run for the first time
+    //If run for the first time
     private Boolean firstRun;
+
     //
     // implement IBurpExtender
     //
@@ -71,73 +77,52 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
         prefs.registerSetting("Payloads", new TypeToken<List<Payload>>(){}.getType(), Preferences.Visibility.GLOBAL);
         prefs.registerSetting("In Scope Only", new TypeToken<Boolean>(){}.getType(), Preferences.Visibility.GLOBAL);
         prefs.registerSetting("First Run", new TypeToken<Boolean>(){}.getType(), Preferences.Visibility.GLOBAL);
+        prefs.registerSetting("Match On Responses", new TypeToken<Boolean>(){}.getType(), Preferences.Visibility.GLOBAL);
+        prefs.registerSetting("Match On Requests", new TypeToken<Boolean>(){}.getType(), Preferences.Visibility.GLOBAL);
 
         //Get the saved payloads from the Preferences object
-        if(prefs.getSetting("Payloads") == null){
-            //If you're running for the first time prefs will set payloads to null
-            payloads = Collections.synchronizedList(new ArrayList<Payload>());
-        }else {
-            payloads = Collections.synchronizedList(prefs.getSetting("Payloads"));
-        }
-
+        payloads = (prefs.getSetting("Payloads") == null)
+                ? Collections.synchronizedList(new ArrayList<Payload>())
+                : Collections.synchronizedList(prefs.getSetting("Payloads"));
         payloadsTableModel = new PayloadsTableModel(payloads, prefs);
 
         // set our extension name
         callbacks.setExtensionName("Response Pattern Matcher");
 
-        // create our UI
+        // create UI
         SwingUtilities.invokeLater(() -> {
-            // main split pane declaration
-            splitPane_main = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-
-            // Results and Input Pane (top half)
-            JSplitPane splitPane_ResultsAndInput = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-
-            // table of log entries (bottom half of top half)
-            table_Results = new ResultTable(resultsTableModel, results, contentController);
-            table_Results.getColumnModel().getColumn(0).setPreferredWidth(5);
-            table_Results.getColumnModel().getColumn(1).setPreferredWidth(20);
-            table_Results.getColumnModel().getColumn(2).setPreferredWidth(400);
-            table_Results.getColumnModel().getColumn(3).setPreferredWidth(30);
-            table_Results.getColumnModel().getColumn(4).setPreferredWidth(600);
-            table_Results.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-            JScrollPane scrollPane_Results = new JScrollPane(table_Results);
-            scrollPane_Results.setPreferredSize(new Dimension(0,330));
-            splitPane_ResultsAndInput.setRightComponent(scrollPane_Results);
-
-            // user input section (top half of top half)
-            JPanel panel_input_outer = new JPanel(new FlowLayout(FlowLayout.CENTER));
-            JPanel panel_input = new JPanel();
-            panel_input.setPreferredSize(new Dimension(500, 350));
+            // Main Panel for user input items (Config Tab)
+            JPanel panel_input = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JScrollPane scrollPane_input = new JScrollPane(panel_input);
             panel_input.setLayout(new BoxLayout(panel_input, BoxLayout.PAGE_AXIS));
 
-            // User Input Label
-            JPanel panel_label_title = new JPanel(new FlowLayout(FlowLayout.CENTER));
-            JLabel label_title = new JLabel("Wordlist Input");
-            label_title.setHorizontalAlignment(SwingConstants.CENTER);
-            panel_label_title.add(label_title);
-            panel_input.add(panel_label_title);
+            // Wordlist Input Label (Config Tab)
+            JPanel panel_label_wordlist = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JLabel label_wordlist = new JLabel("Wordlist Input");
+            label_wordlist.setHorizontalAlignment(SwingConstants.CENTER);
+            panel_label_wordlist.add(label_wordlist);
+            panel_input.add(panel_label_wordlist);
 
-            // Payloads Input
+            // Payloads Input (Config Tab)
             JPanel panel_table_payloads = new JPanel(new FlowLayout(FlowLayout.CENTER));
             table_payloads = new PayloadTable(payloadsTableModel, contentController);
-            table_payloads.getColumnModel().getColumn(0).setPreferredWidth(220);
-            table_payloads.getColumnModel().getColumn(1).setPreferredWidth(35);
-            table_payloads.getColumnModel().getColumn(2).setPreferredWidth(35);
+            table_payloads.getColumnModel().getColumn(0).setPreferredWidth(420);
+            table_payloads.getColumnModel().getColumn(1).setPreferredWidth(80);
+            table_payloads.getColumnModel().getColumn(2).setPreferredWidth(80);
             table_payloads.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
             JScrollPane scrollPane_payloads = new JScrollPane(table_payloads);
-            scrollPane_payloads.setPreferredSize(new Dimension(400, 180));
+            scrollPane_payloads.setPreferredSize(new Dimension(600, 270));
             panel_table_payloads.add(scrollPane_payloads);
             panel_input.add(panel_table_payloads);
 
-            //Button Load
-            JPanel panel_buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            //Button Load (Config Tab)
+            JPanel panel_wordlist_buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
             JButton button_upload = new JButton("Load ...");
             button_upload.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (e.getSource() == button_upload) {
                         final JFileChooser fc = new JFileChooser();
-                        int returnVal = fc.showOpenDialog(panel_buttons);
+                        int returnVal = fc.showOpenDialog(panel_wordlist_buttons);
 
                         if (returnVal == JFileChooser.APPROVE_OPTION) {
                             File file = fc.getSelectedFile();
@@ -172,9 +157,9 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                     }
                 }
             });
-            panel_buttons.add(button_upload);
+            panel_wordlist_buttons.add(button_upload);
 
-            //Button Remove
+            //Button Remove (Config Tab)
             JButton button_remove = new JButton("Remove");
             button_remove.addActionListener(new ActionListener(){
                 public void actionPerformed(ActionEvent e)
@@ -187,9 +172,9 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                     }
                 }
             });
-            panel_buttons.add(button_remove);
+            panel_wordlist_buttons.add(button_remove);
 
-            //Button Clear
+            //Button Clear (Config Tab)
             JButton button_clear = new JButton("Clear");
             button_clear.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e){
@@ -199,9 +184,9 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                     prefs.setSetting("Payloads", payloads);
                 }
             });
-            panel_buttons.add(button_clear);
+            panel_wordlist_buttons.add(button_clear);
 
-            //Button Restore Defaults
+            //Button Restore Defaults (Config Tab)
             JButton button_restoreDefaults = new JButton("Restore Defaults");
             button_restoreDefaults.addActionListener(new ActionListener() {
                 @Override
@@ -209,9 +194,9 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                     restoreDefaults();
                 }
             });
-            panel_buttons.add(button_restoreDefaults);
+            panel_wordlist_buttons.add(button_restoreDefaults);
 
-            //Checkbox is in scope
+            //Checkbox is in scope (Config Tab)
             inScopeOnly = prefs.getSetting("In Scope Only");
             if(inScopeOnly == null)inScopeOnly = true;
             checkBox_isInScope = new JCheckBox("In Scope Only", inScopeOnly);
@@ -227,17 +212,16 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                     };
                 }
             });
-            panel_buttons.add(checkBox_isInScope);
-            panel_input.add(panel_buttons);
+            panel_wordlist_buttons.add(checkBox_isInScope);
+            panel_input.add(panel_wordlist_buttons);
 
-            //Single Input Text field
+            //Single Input Text field (Config Tab)
             JPanel panel_single_input = new JPanel(new FlowLayout(FlowLayout.CENTER));
             JTextField textField_input = new JTextField(25);
             panel_single_input.add(textField_input);
 
-            //Single Input Button
+            //Single Input Button (Config Tab)
             JButton button_add = new JButton("Add");
-            // add the listener to the add jbutton
             button_add.addActionListener(new ActionListener(){
                 public void actionPerformed(ActionEvent e) {
                     String input = textField_input.getText();
@@ -253,40 +237,193 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
             panel_single_input.add(button_add);
             panel_input.add(panel_single_input);
 
-            //Clear results table Button
-            JPanel panel_button_clear_results = new JPanel(new FlowLayout(FlowLayout.CENTER));
-            JButton button_clear_results = new JButton("Clear Results");
-            button_clear_results.addActionListener(new ActionListener() {
+            //First Separator (Config Tab)
+            panel_input.add(new JSeparator());
+
+            // Response Config Label (Config Tab)
+            JPanel panel_label_responses = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JLabel label_responses = new JLabel("Response Match Configuration");
+            label_responses.setHorizontalAlignment(SwingConstants.CENTER);
+            panel_label_responses.add(label_responses);
+            panel_input.add(panel_label_responses);
+
+            //Clear response results table Button (Config Tab)
+            JPanel panel_responseconfig_buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JButton button_clear_responses = new JButton("Clear Matches On Responses");
+            button_clear_responses.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e){
-                    synchronized (results) {
-                        results.clear();
+                    synchronized (results_responses) {
+                        results_responses.clear();
                         contentController.getRequestViewer().setMessage(new byte[0], true);
                         contentController.getResponseViewer().setMessage(new byte[0], false);
-                        resultsTableModel.fireTableDataChanged();
+                        resultsTableModel_responses.fireTableDataChanged();
                     }
                 }
             });
-            panel_button_clear_results.add(button_clear_results);
-            panel_input.add(panel_button_clear_results);
+            panel_responseconfig_buttons.add(button_clear_responses);
 
-            panel_input_outer.add(panel_input);
+            //Checkbox match on responses (Config Tab)
+            matchOnResponses = prefs.getSetting("Match On Responses");
+            if(matchOnResponses == null)matchOnResponses = true;
+            checkBox_matchOnResponses = new JCheckBox("Match On Responses", matchOnResponses);
+            checkBox_matchOnResponses.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    if(e.getStateChange() == ItemEvent.SELECTED) {//checkbox has been selected
+                        matchOnResponses = true;
+                        prefs.setSetting("Match On Responses", matchOnResponses);
+                    } else {
+                        matchOnResponses = false;
+                        prefs.setSetting("Match On Responses", matchOnResponses);
+                    };
+                }
+            });
+            panel_responseconfig_buttons.add(checkBox_matchOnResponses);
+            panel_input.add(panel_responseconfig_buttons);
 
-            //
-            splitPane_ResultsAndInput.setLeftComponent(panel_input_outer);
+            //Second Separator (Config Tab)
+            panel_input.add(new JSeparator());
 
-            // tabs with request/response viewers (bottom half)
-            JTabbedPane tabs = new JTabbedPane();
+            // Request Config Label (Config Tab)
+            JPanel panel_label_requests = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JLabel label_requests = new JLabel("Request Match Configuration");
+            label_requests.setHorizontalAlignment(SwingConstants.CENTER);
+            panel_label_requests.add(label_requests);
+            panel_input.add(panel_label_requests);
+
+            //Clear requests table Button (Config Tab)
+            JPanel panel_requestconfig_buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JButton button_clear_requests = new JButton("Clear Matches On Requests");
+            button_clear_requests.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e){
+                    synchronized (results_requests) {
+                        results_requests.clear();
+                        contentController.getRequestViewer().setMessage(new byte[0], true);
+                        contentController.getResponseViewer().setMessage(new byte[0], false);
+                        resultsTableModel_requests.fireTableDataChanged();
+                    }
+                }
+            });
+            panel_requestconfig_buttons.add(button_clear_requests);
+
+            //Checkbox match on responses (Config Tab)
+            matchOnRequests = prefs.getSetting("Match On Requests");
+            if(matchOnRequests == null)matchOnRequests = false;
+            checkBox_matchOnRequests = new JCheckBox("Match On Requests", matchOnRequests);
+            checkBox_matchOnRequests.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    if(e.getStateChange() == ItemEvent.SELECTED) {//checkbox has been selected
+                        matchOnRequests = true;
+                        prefs.setSetting("Match On Requests", matchOnRequests);
+                    } else {
+                        matchOnRequests = false;
+                        prefs.setSetting("Match On Requests", matchOnRequests);
+                    };
+                }
+            });
+            panel_requestconfig_buttons.add(checkBox_matchOnRequests);
+            panel_input.add(panel_requestconfig_buttons);
+
+            // main split pane for response items (Results Tab)
+            JSplitPane splitPane_results = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            JTabbedPane tabbedPane_results = new JTabbedPane();
+
+            // table of log entries (Results Tab - Responses)
+            table_results_responses = new ResultTable(resultsTableModel_responses, results_responses, contentController);
+            table_results_responses.getColumnModel().getColumn(0).setPreferredWidth(5);
+            table_results_responses.getColumnModel().getColumn(1).setPreferredWidth(20);
+            table_results_responses.getColumnModel().getColumn(2).setPreferredWidth(400);
+            table_results_responses.getColumnModel().getColumn(3).setPreferredWidth(30);
+            table_results_responses.getColumnModel().getColumn(4).setPreferredWidth(600);
+            table_results_responses.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+            JScrollPane scrollPane_Responses = new JScrollPane(table_results_responses);
+            scrollPane_Responses.setPreferredSize(new Dimension(0,330));
+            tabbedPane_results.addTab("Matches On Responses", scrollPane_Responses);
+
+            // table of log entries (Results Tab - Requests)
+            table_results_requests = new ResultTable(resultsTableModel_requests, results_requests, contentController);
+            table_results_requests.getColumnModel().getColumn(0).setPreferredWidth(5);
+            table_results_requests.getColumnModel().getColumn(1).setPreferredWidth(20);
+            table_results_requests.getColumnModel().getColumn(2).setPreferredWidth(400);
+            table_results_requests.getColumnModel().getColumn(3).setPreferredWidth(30);
+            table_results_requests.getColumnModel().getColumn(4).setPreferredWidth(600);
+            table_results_requests.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+            JScrollPane scrollPane_Requests = new JScrollPane(table_results_requests);
+            scrollPane_Requests.setPreferredSize(new Dimension(0,330));
+            tabbedPane_results.addTab("Matches On Requests", scrollPane_Requests);
+            splitPane_results.setLeftComponent(tabbedPane_results);
+
+            //Tabbed pane with request/response viewers (Results Tab)
+            JTabbedPane tabs_requestResponses = new JTabbedPane();
             contentController.setRequestViewer(callbacks.createMessageEditor(BurpExtender.this, false));
             contentController.setResponseViewer(callbacks.createMessageEditor(BurpExtender.this, false));
-            tabs.addTab("Request", contentController.getRequestViewer().getComponent());
-            tabs.addTab("Response", contentController.getResponseViewer().getComponent());
+            tabs_requestResponses.addTab("Request", contentController.getRequestViewer().getComponent());
+            tabs_requestResponses.addTab("Response", contentController.getResponseViewer().getComponent());
+            splitPane_results.setRightComponent(tabs_requestResponses);
 
-            // main split pane, setting the components
-            splitPane_main.setRightComponent(tabs);
-            splitPane_main.setLeftComponent(splitPane_ResultsAndInput);
+            // Main Panel for more info (About Tab)
+            JPanel panel_about = new JPanel();
+            JScrollPane scrollPane_about = new JScrollPane(panel_about);
+
+            JPanel panel_about_contents = new JPanel();
+            panel_about_contents.setPreferredSize(new Dimension(300,250));
+            panel_about_contents.setLayout(new BoxLayout(panel_about_contents, BoxLayout.PAGE_AXIS));
+            panel_about_contents.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+
+            JPanel panel_about_author = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JLabel label_author = new JLabel("Author");
+            label_author.setHorizontalAlignment(SwingConstants.CENTER);
+            label_author.setVerticalAlignment(SwingConstants.TOP);
+            label_author.setFont(new Font(label_author.getName(), Font.PLAIN, 20));
+            panel_about_author.add(label_author);
+            panel_about_contents.add(panel_about_author);
+
+            JPanel panel_about_name = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JLabel label_name = new JLabel("Jack Jarvis");
+            panel_about_name.add(label_name);
+            panel_about_contents.add(panel_about_name);
+
+            JPanel panel_about_tag = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JLabel label_tag = new JLabel("Web Hacking Enthusiast");
+            panel_about_tag.add(label_tag);
+            panel_about_contents.add(panel_about_tag);
+
+            JPanel panel_about_role = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JLabel label_role = new JLabel("Security Consultant");
+            panel_about_role.add(label_role);
+            panel_about_contents.add(panel_about_role);
+
+            JPanel panel_about_follow = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JLabel label_follow = new JLabel("Find Me On");
+            label_follow.setPreferredSize(new Dimension(500,50));
+            label_follow.setHorizontalAlignment(SwingConstants.CENTER);
+            label_follow.setVerticalAlignment(SwingConstants.BOTTOM);
+            label_follow.setFont(new Font(label_author.getName(), Font.PLAIN, 20));
+            panel_about_follow.add(label_follow);
+            panel_about_contents.add(panel_about_follow);
+
+            JPanel panel_github = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            String githubURL="https://github.com/JackJ07";
+            JHyperlink githubLogo = new JHyperlink(new ImageIcon(getClass().getClassLoader().getResource("GitHub-Mark-32px.png")),githubURL, githubURL);
+            githubLogo.setPreferredSize(new Dimension(80, 50));
+            panel_github.add(githubLogo);
+            String twitterURL="https://twitter.com/JackJarvis07";
+            JHyperlink twitterLogo = new JHyperlink(new ImageIcon(getClass().getClassLoader().getResource("Twitter_Logo_Blue_42px.png")), twitterURL, twitterURL);
+            twitterLogo.setPreferredSize(new Dimension(80, 50));
+            panel_github.add(twitterLogo);
+            panel_about_contents.add(panel_github);
+
+            panel_about.add(panel_about_contents);
+
+            //Setting up the tabs
+            tabs_outer = new JTabbedPane();
+            tabs_outer.addTab("Config", scrollPane_input);
+            tabs_outer.addTab("Matches", splitPane_results);
+            tabs_outer.addTab("About", scrollPane_about);
 
             // customize our UI components
-            callbacks.customizeUiComponent(splitPane_main);
+            callbacks.customizeUiComponent(tabs_outer);
 
             // add the custom tab to Burp's UI
             callbacks.addSuiteTab(BurpExtender.this);
@@ -328,6 +465,14 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
         inScopeOnly = true;
         prefs.setSetting("In Scope Only", inScopeOnly);
         checkBox_isInScope.setSelected(true);
+
+        matchOnResponses = true;
+        prefs.setSetting("Match On Responses", matchOnResponses);
+        checkBox_matchOnResponses.setSelected(true);
+
+        matchOnRequests = false;
+        prefs.setSetting("Match On Requests", matchOnRequests);
+        checkBox_matchOnRequests.setSelected(false);
     }
 
     //
@@ -340,7 +485,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
 
     @Override
     public Component getUiComponent(){
-        return splitPane_main;
+        return tabs_outer;
     }
 
     //
@@ -348,7 +493,8 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
     //
     @Override
     public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo){
-        service.execute(new MessageProcessor(toolFlag, messageInfo, inScopeOnly, messageIsRequest, payloads, results, resultsTableModel));
+        service.execute(new MessageProcessor(toolFlag, messageInfo, inScopeOnly, messageIsRequest, matchOnRequests,
+                matchOnResponses, payloads, results_responses, results_requests, resultsTableModel_responses, resultsTableModel_requests));
     }
 
     //

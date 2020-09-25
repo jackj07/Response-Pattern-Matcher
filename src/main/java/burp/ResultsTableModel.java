@@ -45,7 +45,6 @@ public class ResultsTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        //if(rowIndex > results.size()) return "";//hacky kinda guard
         ResultEntry resultEntry = results.get(rowIndex);
 
         switch (columnIndex) {

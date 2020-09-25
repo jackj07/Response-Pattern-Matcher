@@ -12,90 +12,121 @@ public class MessageProcessor implements Runnable {
     private IHttpRequestResponse messageInfo;
     private boolean inScopeOnly;
     private boolean messageIsRequest;
+    private boolean matchOnRequests;
+    private boolean matchOnResponses;
     private List<Payload> payloads;
-    private List<ResultEntry> results;
-    private ResultsTableModel resultsTableModel;
+    private List<ResultEntry> results_responses;
+    private List<ResultEntry> results_requests;
+    private ResultsTableModel resultsTableModel_responses;
+    private ResultsTableModel resultsTableModel_requests;
 
     public MessageProcessor(int toolFlag, IHttpRequestResponse messageInfo,
                             boolean inScopeOnly, boolean messageIsRequest,
+                            boolean matchOnRequests, boolean matchOnResponses,
                             List<Payload> payloads,
-                            List<ResultEntry> results,
-                            ResultsTableModel resultsTableModel) {
+                            List<ResultEntry> results_responses,
+                            List<ResultEntry> results_requests,
+                            ResultsTableModel resultsTableModel_responses,
+                            ResultsTableModel resultsTableModel_requests) {
         this.toolFlag = toolFlag;
         this.messageInfo = messageInfo;
         this.inScopeOnly = inScopeOnly;
         this.messageIsRequest = messageIsRequest;
+        this.matchOnRequests = matchOnRequests;
+        this.matchOnResponses = matchOnResponses;
         this.payloads = payloads;
-        this.results = results;
-        this.resultsTableModel = resultsTableModel;
+        this.results_responses = results_responses;
+        this.results_requests = results_requests;
+        this.resultsTableModel_responses = resultsTableModel_responses;
+        this.resultsTableModel_requests = resultsTableModel_requests;
     }
 
     @Override
     public void run() {
-        if (!messageIsRequest) {
-            // Check for scope
-            try {
-                if ((inScopeOnly && BurpExtender.callbacks.isInScope(new URL(messageInfo.getHttpService().toString()))) || !inScopeOnly) {
-                    // create a new log entry with the message details
-                    String responseAsString = new String(messageInfo.getResponse());
+        try {
+            if ((inScopeOnly && BurpExtender.callbacks.isInScope(new URL(messageInfo.getHttpService().toString()))) || !inScopeOnly) { //check scope
 
-                    List<ResultEntry> latestResults = new ArrayList<ResultEntry>();
-                    URL url = BurpExtender.helpers.analyzeRequest(messageInfo).getUrl();
-                    IHttpRequestResponsePersisted responsePersisted = BurpExtender.callbacks.saveBuffersToTempFiles(messageInfo);
+                String messageAsString = null;
+                if(!messageIsRequest && matchOnResponses){
+                    messageAsString  = new String(messageInfo.getResponse());
+                }else if(messageIsRequest && matchOnRequests){
+                    messageAsString = new String(messageInfo.getRequest());
+                }else{
+                    return;
+                }
 
-                    for (Payload payload : payloads) {
-                        if(payload.active) {//Only use the payload if it is active
-                            Boolean isRegex = payload.isRegex;
-                            String payloadContent = payload.content;
+                List<ResultEntry> latestResults = new ArrayList<ResultEntry>();
+                URL url = BurpExtender.helpers.analyzeRequest(messageInfo).getUrl();
+                IHttpRequestResponsePersisted requestResponsePersisted = BurpExtender.callbacks.saveBuffersToTempFiles(messageInfo);
 
-                            if (!isRegex)
-                                payloadContent = Pattern.quote(payloadContent);//Take as literal string, not a search pattern.
-                            Pattern pattern = Pattern.compile(payloadContent, Pattern.CASE_INSENSITIVE);
-                            Matcher matcher = pattern.matcher(responseAsString);
+                for (Payload payload : payloads) {
+                    if (payload.active) {//Only use the payload if it is active
+                        Boolean isRegex = payload.isRegex;
+                        String payloadContent = payload.content;
 
-                            while (matcher.find()) {
-                                String extract = "";
-                                try {
-                                    extract = responseAsString.substring(matcher.start() - 30, matcher.end() + 30);
-                                } catch (StringIndexOutOfBoundsException ex) {
-                                    //Only want to do this when OOB Exception is thrown following Extraction.
-                                    //Too much overhead to do it for every response.
-                                    extract = responseAsString.substring(
-                                            getMaxStartIndex(responseAsString, matcher.start(), matcher.end()),
-                                            getMaxEndIndex(responseAsString, matcher.start(), matcher.end()));
-                                }
+                        if (!isRegex)
+                            payloadContent = Pattern.quote(payloadContent);//Take as literal string, not a search pattern.
+                        Pattern pattern = Pattern.compile(payloadContent, Pattern.CASE_INSENSITIVE);
+                        Matcher matcher = pattern.matcher(messageAsString);
 
-                                //Update result table with a result
-                                latestResults.add(new ResultEntry(
-                                        0,
-                                        toolFlag,
-                                        url,
-                                        responsePersisted,
-                                        extract,
-                                        payload.content));
-                            }
-                        }
-                    }
-                    if (latestResults.size() > 0) {
-                        synchronized (results) {
+                        while (matcher.find()) {
+                            String extract = "";
                             try {
-                                for (ResultEntry result : latestResults) {
-                                    result.number = results.size();
-                                    results.add(result);
-                                    int row = results.size() - 1;
-                                    resultsTableModel.fireTableRowsInserted(row, row);//Have to add 1 by 1 to keep model and view aligned to prevent IOOBException
-                                }
-                            }catch(Exception e){
-                                BurpExtender.sterror.println("An exception occurred when adding Results");
-                                e.printStackTrace();
+                                extract = messageAsString.substring(matcher.start() - 30, matcher.end() + 30);
+                            } catch (StringIndexOutOfBoundsException ex) {
+                                //Only want to do this when OOB Exception is thrown following Extraction.
+                                //Too much overhead to do it for every response.
+                                extract = messageAsString.substring(
+                                        getMaxStartIndex(messageAsString, matcher.start(), matcher.end()),
+                                        getMaxEndIndex(messageAsString, matcher.start(), matcher.end()));
                             }
+
+                            //Update result table with a result
+                            latestResults.add(new ResultEntry(
+                                    0,
+                                    toolFlag,
+                                    url,
+                                    requestResponsePersisted,
+                                    extract,
+                                    payload.content));
                         }
                     }
                 }
-            } catch (MalformedURLException e) {
-                BurpExtender.sterror.println("A Malformed URL occurred");
-                BurpExtender.sterror.println(e);
+                if ((latestResults.size() > 0) && !messageIsRequest) {
+                    synchronized (results_responses) {
+                        try {
+                            for (ResultEntry result : latestResults) {
+                                result.number = results_responses.size();
+                                results_responses.add(result);
+                                int row = results_responses.size() - 1;
+                                resultsTableModel_responses.fireTableRowsInserted(row, row);//Have to add 1 by 1 to keep model and view aligned to prevent IOOBException
+                            }
+                        } catch (Exception e) {
+                            BurpExtender.sterror.println("An exception occurred when adding response to Results");
+                            BurpExtender.sterror.println(e);
+                            e.printStackTrace();
+                        }
+                    }
+                }else if ((latestResults.size() > 0) && messageIsRequest) {
+                    synchronized (results_requests) {
+                        try {
+                            for (ResultEntry result : latestResults) {
+                                result.number = results_requests.size();
+                                results_requests.add(result);
+                                int row = results_requests.size() - 1;
+                                resultsTableModel_requests.fireTableRowsInserted(row, row);//Have to add 1 by 1 to keep model and view aligned to prevent IOOBException
+                            }
+                        } catch (Exception e) {
+                            BurpExtender.sterror.println("An exception occurred when adding request to Results");
+                            BurpExtender.sterror.println(e);
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
+        } catch (MalformedURLException e) {
+            BurpExtender.sterror.println("A Malformed URL occurred when checking scope");
+            BurpExtender.sterror.println(e);
         }
     }
 

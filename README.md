@@ -21,7 +21,10 @@ Built using Java 12.0.2, runs on Burp v2.
 # Acknowledgements
 <b>Author</b>: Jack Jarvis, NCC Group <br/>
 Developed using IntelliJ IDE and the Gradle Build Tool.
-
+<br/><br/>
+CoreyD97 Burp Extender Utilities:<br/>
+https://github.com/CoreyD97/BurpExtenderUtilities
+<br/><br/>
 For further Burp Extension development please refer to:<br />
 https://portswigger.net/burp/extender/api/<br />
 https://portswigger.net/burp/extender/writing-your-first-burp-suite-extension<br />
