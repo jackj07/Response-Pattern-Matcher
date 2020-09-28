@@ -10,6 +10,7 @@ releases/
 gradlew
 gradlew.bat
 settings.gradle
+.DS_Store
 
 #Ignore IDE stuff
 .idea/
