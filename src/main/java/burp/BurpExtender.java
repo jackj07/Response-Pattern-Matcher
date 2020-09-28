@@ -537,7 +537,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
 
         if(responses.length > 0){
             List<JMenuItem> ret = new LinkedList<JMenuItem>();
-            JMenuItem menuItem = new JMenuItem("Test 123");
+            JMenuItem menuItem = new JMenuItem("Test 1234");
             menuItem.addActionListener(new ActionListener(){
                 public void actionPerformed(ActionEvent arg0) {
                     if(arg0.getActionCommand().equals("Test 123")){
