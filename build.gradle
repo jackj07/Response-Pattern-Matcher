@@ -19,7 +19,7 @@ repositories {
 dependencies {
     compile 'net.portswigger.burp.extender:burp-extender-api:1.7.22'
     compile 'com.github.CoreyD97:BurpExtenderUtilities:409993f66a0779ce469d4226fa6d4f4de12e1495'
-    testCompile files('/Applications/Burp Suite Community Edition.app/Contents/java/app/burpsuite_community.jar')
+    testCompile files("C:\Program Files\BurpSuiteCommunity\burpsuite_community.jar")
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 }
