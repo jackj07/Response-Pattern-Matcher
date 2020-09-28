@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
@@ -13,7 +14,7 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 
 public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessageEditorController, IExtensionStateListener,
-    IContextMenuFactory{
+    IContextMenuFactory, IContextMenuInvocation {
     //Static Burp objects
     protected static IBurpExtenderCallbacks callbacks;
     protected static IExtensionHelpers helpers;
@@ -248,7 +249,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
             panel_input.add(panel_label_responses);
 
             //Clear response results table Button (Config Tab)
-            JPanel panel_responseconfig_buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JPanel panel_responseConfig_buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
             JButton button_clear_responses = new JButton("Clear Matches On Responses");
             button_clear_responses.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e){
@@ -260,7 +261,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                     }
                 }
             });
-            panel_responseconfig_buttons.add(button_clear_responses);
+            panel_responseConfig_buttons.add(button_clear_responses);
 
             //Checkbox match on responses (Config Tab)
             matchOnResponses = prefs.getSetting("Match On Responses");
@@ -278,8 +279,8 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                     };
                 }
             });
-            panel_responseconfig_buttons.add(checkBox_matchOnResponses);
-            panel_input.add(panel_responseconfig_buttons);
+            panel_responseConfig_buttons.add(checkBox_matchOnResponses);
+            panel_input.add(panel_responseConfig_buttons);
 
             //Second Separator (Config Tab)
             panel_input.add(new JSeparator());
@@ -292,7 +293,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
             panel_input.add(panel_label_requests);
 
             //Clear requests table Button (Config Tab)
-            JPanel panel_requestconfig_buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JPanel panel_requestConfig_buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
             JButton button_clear_requests = new JButton("Clear Matches On Requests");
             button_clear_requests.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e){
@@ -304,7 +305,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                     }
                 }
             });
-            panel_requestconfig_buttons.add(button_clear_requests);
+            panel_requestConfig_buttons.add(button_clear_requests);
 
             //Checkbox match on responses (Config Tab)
             matchOnRequests = prefs.getSetting("Match On Requests");
@@ -322,8 +323,8 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                     };
                 }
             });
-            panel_requestconfig_buttons.add(checkBox_matchOnRequests);
-            panel_input.add(panel_requestconfig_buttons);
+            panel_requestConfig_buttons.add(checkBox_matchOnRequests);
+            panel_input.add(panel_requestConfig_buttons);
 
             // main split pane for response items (Results Tab)
             JSplitPane splitPane_results = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -438,6 +439,9 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                 prefs.setSetting("First Run", false);
             }
 
+            //Setup custom menu items
+            callbacks.registerContextMenuFactory(this);
+
             stdout.println("Extension Loaded Successfully");
         });
     }
@@ -524,10 +528,61 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
         stdout.println("Extension Unloaded Successfully");
     }
 
+    //
+    // implement IContextMenuFactory
+    //
     @Override
     public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-        List<JMenuItem> jMenuItems = new LinkedList<JMenuItem>();
-        jMenuItems.add(new JMenuItem("testing"));
-        return jMenuItems;
+        final IHttpRequestResponse responses[] = invocation.getSelectedMessages();
+
+        if(responses.length > 0){
+            List<JMenuItem> ret = new LinkedList<JMenuItem>();
+            JMenuItem menuItem = new JMenuItem("Test 123");
+            menuItem.addActionListener(new ActionListener(){
+                public void actionPerformed(ActionEvent arg0) {
+                    if(arg0.getActionCommand().equals("Test 123")){
+                        System.out.println("custom menu item clicked.");
+                    }
+                }
+            });
+            ret.add(menuItem);
+            return(ret);
+        }
+
+        return null;
     }
+
+    //
+    // implement IContextMenuInvocation
+    //
+    @Override
+    public InputEvent getInputEvent() {
+        return null;
+    }
+
+    @Override
+    public int getToolFlag() {
+        return 0;
+    }
+
+    @Override
+    public byte getInvocationContext() {
+        return 0;
+    }
+
+    @Override
+    public int[] getSelectionBounds() {
+        return new int[0];
+    }
+
+    @Override
+    public IHttpRequestResponse[] getSelectedMessages() {
+        return new IHttpRequestResponse[0];
+    }
+
+    @Override
+    public IScanIssue[] getSelectedIssues() {
+        return new IScanIssue[0];
+    }
+
 }
