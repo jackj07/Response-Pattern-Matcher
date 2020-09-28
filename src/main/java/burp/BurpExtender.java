@@ -6,14 +6,14 @@ import com.google.gson.reflect.TypeToken;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 
-public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessageEditorController, IExtensionStateListener {
+public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessageEditorController, IExtensionStateListener,
+    IContextMenuFactory{
     //Static Burp objects
     protected static IBurpExtenderCallbacks callbacks;
     protected static IExtensionHelpers helpers;
@@ -522,5 +522,12 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
         service.shutdownNow();
 
         stdout.println("Extension Unloaded Successfully");
+    }
+
+    @Override
+    public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
+        List<JMenuItem> jMenuItems = new LinkedList<JMenuItem>();
+        jMenuItems.add(new JMenuItem("testing"));
+        return jMenuItems;
     }
 }
