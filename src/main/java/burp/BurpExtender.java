@@ -12,8 +12,7 @@ import java.util.concurrent.*;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 
-public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessageEditorController, IExtensionStateListener,
-    IContextMenuFactory, IContextMenuInvocation {
+public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessageEditorController, IExtensionStateListener{
     //Static Burp objects
     protected static IBurpExtenderCallbacks callbacks;
     protected static IExtensionHelpers helpers;
@@ -438,9 +437,6 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
                 prefs.setSetting("First Run", false);
             }
 
-            //Setup custom menu items
-            callbacks.registerContextMenuFactory(this);
-
             stdout.println("Extension Loaded Successfully");
         });
     }
@@ -526,62 +522,4 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IMessag
 
         stdout.println("Extension Unloaded Successfully");
     }
-
-    //
-    // implement IContextMenuFactory
-    //
-    @Override
-    public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-        final IHttpRequestResponse responses[] = invocation.getSelectedMessages();
-
-        if(responses.length > 0){
-            List<JMenuItem> ret = new LinkedList<JMenuItem>();
-            JMenuItem menuItem = new JMenuItem("Test 1234");
-            menuItem.addActionListener(new ActionListener(){
-                public void actionPerformed(ActionEvent arg0) {
-                    if(arg0.getActionCommand().equals("Test 123")){
-                        System.out.println("custom menu item clicked.");
-                    }
-                }
-            });
-            ret.add(menuItem);
-            return(ret);
-        }
-
-        return null;
-    }
-
-    //
-    // implement IContextMenuInvocation
-    //
-    @Override
-    public InputEvent getInputEvent() {
-        return null;
-    }
-
-    @Override
-    public int getToolFlag() {
-        return 0;
-    }
-
-    @Override
-    public byte getInvocationContext() {
-        return 0;
-    }
-
-    @Override
-    public int[] getSelectionBounds() {
-        return new int[0];
-    }
-
-    @Override
-    public IHttpRequestResponse[] getSelectedMessages() {
-        return new IHttpRequestResponse[0];
-    }
-
-    @Override
-    public IScanIssue[] getSelectedIssues() {
-        return new IScanIssue[0];
-    }
-
 }

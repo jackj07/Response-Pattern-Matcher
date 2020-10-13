@@ -7,8 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class BurpExtenderTest {
 
     @Test
-    void getToolFlag() {
+    void temp() {
         BurpExtender extender = new BurpExtender();
-        assertEquals(extender.getToolFlag(), 0);
     }
 }
