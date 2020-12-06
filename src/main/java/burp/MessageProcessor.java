@@ -96,7 +96,7 @@ public class MessageProcessor implements Runnable {
                     synchronized (results_responses) {
                         try {
                             for (ResultEntry result : latestResults) {
-                                result.number = results_responses.size();
+                                result.setNumber(results_responses.size());
                                 results_responses.add(result);
                                 int row = results_responses.size() - 1;
                                 resultsTableModel_responses.fireTableRowsInserted(row, row);//Have to add 1 by 1 to keep model and view aligned to prevent IOOBException
@@ -111,7 +111,7 @@ public class MessageProcessor implements Runnable {
                     synchronized (results_requests) {
                         try {
                             for (ResultEntry result : latestResults) {
-                                result.number = results_requests.size();
+                                result.setNumber(results_requests.size());
                                 results_requests.add(result);
                                 int row = results_requests.size() - 1;
                                 resultsTableModel_requests.fireTableRowsInserted(row, row);//Have to add 1 by 1 to keep model and view aligned to prevent IOOBException

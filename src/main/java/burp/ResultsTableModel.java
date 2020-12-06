@@ -49,15 +49,15 @@ public class ResultsTableModel extends AbstractTableModel {
 
         switch (columnIndex) {
             case 0:
-                return resultEntry.number;
+                return resultEntry.getNumber();
             case 1:
-                return BurpExtender.callbacks.getToolName(resultEntry.tool);
+                return BurpExtender.callbacks.getToolName(resultEntry.getTool());
             case 2:
-                return resultEntry.url.toString();
+                return resultEntry.getUrl().toString();
             case 3:
-                return resultEntry.payloadContent;
+                return resultEntry.getPayloadContent();
             case 4:
-                return resultEntry.sampleExtract;
+                return resultEntry.getSampleExtract();
             default:
                 return "";
         }
