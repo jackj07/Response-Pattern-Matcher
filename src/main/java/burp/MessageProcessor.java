@@ -127,6 +127,7 @@ public class MessageProcessor implements Runnable {
         } catch (MalformedURLException e) {
             BurpExtender.sterror.println("A Malformed URL occurred when checking scope");
             BurpExtender.sterror.println(e);
+            e.printStackTrace();
         }
     }
 
