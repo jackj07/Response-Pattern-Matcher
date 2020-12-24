@@ -12,6 +12,9 @@ build/
 # Ignore complied classes
 out/
 
+# Ignore tests
+test/
+
 # for OS specific
 .DS_Store
 .DS_Store?
