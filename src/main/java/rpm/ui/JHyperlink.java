@@ -1,7 +1,7 @@
-package burp;
+package rpm.ui;
 
-import java.awt.Color;
-import java.awt.Cursor;
+import burp.BurpExtender;
+
 import java.awt.Desktop;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -39,6 +39,10 @@ public class JHyperlink extends JLabel {
                             "Could not open the hyperlink. Error: " + e1.getMessage(),
                             "Error",
                             JOptionPane.ERROR_MESSAGE);
+                } catch (Exception e2){
+                    BurpExtender.stderror.println("An error occurred creating a JHyperlink:");
+                    BurpExtender.stderror.println(e2);
+                    e2.printStackTrace();
                 }
             }
 

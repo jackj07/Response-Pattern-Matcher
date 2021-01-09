@@ -1,11 +1,13 @@
-package burp;
+package rpm.ui;
+
+import rpm.ResultEntry;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.List;
 
-public class CellRenderer extends DefaultTableCellRenderer{
+class CellRenderer extends DefaultTableCellRenderer{
     private Color highlightColour;
     private List<ResultEntry> results;
     public void setHighlightColor(Color colour){ this.highlightColour=colour; }

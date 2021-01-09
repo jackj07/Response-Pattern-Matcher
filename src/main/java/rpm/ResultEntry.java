@@ -1,10 +1,11 @@
-package burp;
+package rpm;
+
+import burp.IHttpRequestResponsePersisted;
 
 import java.awt.*;
 import java.net.URL;
 
-public class ResultEntry
-{
+public class ResultEntry {
     //Needs to be in serializable (Setter getter) format for Jackson json parser
     private int number;
     private int tool;
@@ -14,9 +15,8 @@ public class ResultEntry
     private String payloadContent;
     private Color color;
 
-    ResultEntry(int number, int tool, URL url, IHttpRequestResponsePersisted requestResponse,
-                String sampleExtract, String payloadContent)
-    {
+    public ResultEntry(int number, int tool, URL url, IHttpRequestResponsePersisted requestResponse,
+                       String sampleExtract, String payloadContent) {
         this.number = number;
         this.tool = tool;
         this.url = url;

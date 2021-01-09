@@ -1,5 +1,6 @@
-package burp;
+package rpm.model;
 
+import rpm.Payload;
 import com.coreyd97.BurpExtenderUtilities.Preferences;
 
 import javax.swing.table.AbstractTableModel;
@@ -7,9 +8,9 @@ import java.util.List;
 
 public class PayloadsTableModel extends AbstractTableModel {
 
-    List<Payload> payloads;
-    Preferences prefs;
-    PayloadsTableModel(List<Payload> payloads, Preferences prefs){
+    private List<Payload> payloads;
+    private Preferences prefs;
+    public PayloadsTableModel(List<Payload> payloads, Preferences prefs){
         this.payloads = payloads;
         this.prefs = prefs;
     }
@@ -56,51 +57,47 @@ public class PayloadsTableModel extends AbstractTableModel {
     @Override
     public boolean isCellEditable(int row, int col) {
         if (col == 1) {
-            if(payloads.get(row).content.equals("/*")) return false;
-            return true;
-        } else if(col == 2) {
-            return true;
-        } else {
-            return false;
-        }
+            return !payloads.get(row).getContent().equals("/*");
+        } else return col == 2;
     }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         switch(columnIndex) {
             case 0:
-                return payloads.get(rowIndex).content;
+                return payloads.get(rowIndex).getContent();
             case 1:
-                return payloads.get(rowIndex).isRegex;
+                return payloads.get(rowIndex).getIsRegex();
             case 2:
-                return payloads.get(rowIndex).active;
+                return payloads.get(rowIndex).getActive();
             default:
-                return payloads.get(rowIndex).content;
+                return payloads.get(rowIndex).getContent();
         }
     }
 
     @Override
     public void setValueAt(Object value, int row, int col) {
+        if(row > payloads.size())return;
         super.setValueAt(value, row, col);
 
         if (col == 1) {
-            if ((Boolean) this.getValueAt(row, col) == true) {
-                payloads.set(row, new Payload(payloads.get(row).content,false, payloads.get(row).active));
+            if ((Boolean) this.getValueAt(row, col)) {
+                payloads.set(row, new Payload(payloads.get(row).getContent(),false, payloads.get(row).getActive()));
                 prefs.setSetting("Payloads", payloads);
             }
-            else if ((Boolean) this.getValueAt(row, col) == false) {
-                payloads.set(row, new Payload(payloads.get(row).content,true, payloads.get(row).active));
+            else if (!(Boolean) this.getValueAt(row, col)) {
+                payloads.set(row, new Payload(payloads.get(row).getContent(),true, payloads.get(row).getActive()));
                 prefs.setSetting("Payloads", payloads);
             }
         }
 
         if (col == 2){
-            if ((Boolean) this.getValueAt(row, col) == true) {
-                payloads.set(row, new Payload(payloads.get(row).content, payloads.get(row).isRegex, false));
+            if ((Boolean) this.getValueAt(row, col)) {
+                payloads.set(row, new Payload(payloads.get(row).getContent(), payloads.get(row).getIsRegex(), false));
                 prefs.setSetting("Payloads", payloads);
             }
-            else if ((Boolean) this.getValueAt(row, col) == false) {
-                payloads.set(row, new Payload(payloads.get(row).content, payloads.get(row).isRegex, true));
+            else if (!(Boolean) this.getValueAt(row, col)) {
+                payloads.set(row, new Payload(payloads.get(row).getContent(), payloads.get(row).getIsRegex(), true));
                 prefs.setSetting("Payloads", payloads);
             }
         }
