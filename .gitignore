@@ -13,5 +13,6 @@ releases/
 # Ignore complied classes
 out/
 
-# Ignore test folder
-test/
+# for OS specific
+.DS_Store
+.DS_Store?

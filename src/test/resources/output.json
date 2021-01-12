@@ -1,0 +1,51 @@
+[ {
+  "Number" : 1,
+  "Tool" : "proxy",
+  "URL" : "http://test.com",
+  "HTTP Contents" : {
+    "Request" : "",
+    "Response" : ""
+  },
+  "Sample Extract" : "/body> password is <b>welc0me1</b>",
+  "Payload Content" : "password"
+}, {
+  "Number" : 2,
+  "Tool" : "proxy",
+  "URL" : "https://github.com/",
+  "HTTP Contents" : {
+    "Request" : "",
+    "Response" : ""
+  },
+  "Sample Extract" : "/body> username is <b>jack123</b>",
+  "Payload Content" : "username"
+}, {
+  "Number" : 3,
+  "Tool" : "proxy",
+  "URL" : "https://www.lipsum.com/",
+  "HTTP Contents" : {
+    "Request" : "",
+    "Response" : ""
+  },
+  "Sample Extract" : "port:3234",
+  "Payload Content" : "port"
+}, {
+  "Number" : 4,
+  "Tool" : "repeater",
+  "URL" : "http://test2.com",
+  "HTTP Contents" : {
+    "Request" : "",
+    "Response" : ""
+  },
+  "Sample Extract" : "/body> password is <b>welc0me2</b>",
+  "Payload Content" : "password"
+}, {
+  "Number" : 5,
+  "Tool" : "proxy",
+  "URL" : "http://test3.com",
+  "HTTP Contents" : {
+    "Request" : "",
+    "Response" : ""
+  },
+  "Sample Extract" : "asdasdsdfSDFAHtempsdgdg",
+  "Payload Content" : "temp"
+} ]
