@@ -1,4 +1,8 @@
-package burp;
+package rpm.controller;
+
+import burp.IHttpRequestResponse;
+import burp.IHttpRequestResponsePersisted;
+import burp.IMessageEditor;
 
 public class ContentController {
     private IHttpRequestResponse currentlyDisplayedItem;

@@ -1,4 +1,7 @@
-package burp;
+package rpm.model;
+
+import rpm.ResponsePatternMatcher;
+import rpm.ResultEntry;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
@@ -45,20 +48,20 @@ public class ResultsTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        //if(rowIndex > results.size()) return "";//hacky kinda guard
+        if(rowIndex > results.size()) return "";
         ResultEntry resultEntry = results.get(rowIndex);
 
         switch (columnIndex) {
             case 0:
-                return resultEntry.number;
+                return resultEntry.getNumber();
             case 1:
-                return BurpExtender.callbacks.getToolName(resultEntry.tool);
+                return ResponsePatternMatcher.callbacks.getToolName(resultEntry.getTool());
             case 2:
-                return resultEntry.url.toString();
+                return resultEntry.getUrl().toString();
             case 3:
-                return resultEntry.payloadContent;
+                return resultEntry.getPayloadContent();
             case 4:
-                return resultEntry.sampleExtract;
+                return resultEntry.getSampleExtract();
             default:
                 return "";
         }
