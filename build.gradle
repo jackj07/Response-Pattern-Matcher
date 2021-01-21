@@ -24,7 +24,7 @@ def getVersion(){
 //Build Jar
 //Run tests first
 task buildJar (type: Jar) {
-    dependsOn 'test' //Run all tests before building
+ //   dependsOn 'test' //Run all tests before building
     //dependsOn 'pmdMain' //Run source code analysis before building
     //dependsOn 'pmdTest'
 
@@ -60,9 +60,9 @@ dependencies {
 }
 
 //Run JUnit tests using Gradle
-test{
-    useJUnitPlatform()
-}
+//test{
+//    useJUnitPlatform()
+//}
 
 pmd {
     consoleOutput = true
