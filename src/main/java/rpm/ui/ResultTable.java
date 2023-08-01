@@ -6,6 +6,7 @@ import rpm.controller.ContentController;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -14,6 +15,7 @@ class ResultTable extends JTable {
     ExtenderPopupMenu menu;
     CellRenderer cellRenderer = new CellRenderer();
 
+    @SuppressWarnings("deprecation")
     public ResultTable(TableModel tableModel, List<ResultEntry> results, ContentController contentController) {
         super(tableModel);
         this.setAutoCreateRowSorter(true);
@@ -74,8 +76,8 @@ class ResultTable extends JTable {
         return (SwingUtilities.isRightMouseButton(e) ||
                 e.getButton() == MouseEvent.BUTTON3 ||
                 (System.getProperty("os.name").contains("Mac OS X") &&
-                        (e.getModifiers() & e.BUTTON1_MASK) != 0 &&
-                        (e.getModifiers() & e.CTRL_MASK) != 0));
+                        (e.getModifiers() & InputEvent.BUTTON1_MASK) != 0 &&
+                        (e.getModifiers() & InputEvent.CTRL_MASK) != 0));
     }
 
     public void setDefaultColumnSizes(){

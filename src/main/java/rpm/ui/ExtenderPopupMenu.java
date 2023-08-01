@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 class ExtenderPopupMenu extends JPopupMenu {
-    private ResultsTableModel model;
-    private ResultTable table;
-    private List<ResultEntry> results;
-    private CellRenderer cellRenderer;
+    private final ResultsTableModel model;
+    private final ResultTable table;
+    private final List<ResultEntry> results;
+    private final CellRenderer cellRenderer;
 
     JSONParser parser = new JSONParser(BurpExtender.callbacks);
 

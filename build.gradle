@@ -5,7 +5,7 @@
  * Learn how to create Gradle builds at https://guides.gradle.org/creating-new-gradle-builds
  */
 apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'pmd'
 
 group 'com.jackj07.rpm'
@@ -13,50 +13,70 @@ group 'com.jackj07.rpm'
 //Add version to jar name
 version getVersion()
 
-sourceCompatibility = 12.0
-targetCompatibility = 12.0
+sourceCompatibility = 17.0
+targetCompatibility = 17.0
 
 //Keep updated
 def getVersion(){
-    return "v2.0"
+    return "v2.0.1"
 }
 
-//Build Jar
-//Run tests first
-task buildJar (type: Jar) {
-    dependsOn 'test' //Run all tests before building
-    //dependsOn 'pmdMain' //Run source code analysis before building
-    //dependsOn 'pmdTest'
-
-    baseName = project.name
-
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } } {
-        exclude '/test/*'
-    }
-
-    with jar
-}
-
-//Designate jar output directory
-tasks.withType(Jar) {
-    destinationDir = file("$rootDir/releases")
-}
-
-repositories {
-    mavenCentral()
-    maven {
-        url "https://jitpack.io"
+allprojects {
+    repositories {
+        mavenCentral()
+        maven {url "https://jitpack.io"}
     }
 }
 
 dependencies {
-    compile 'net.portswigger.burp.extender:burp-extender-api:1.7.22'
-    compile 'com.github.CoreyD97:BurpExtenderUtilities:409993f66a0779ce469d4226fa6d4f4de12e1495'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
-    testCompile files("/Applications/Burp Suite Community Edition.app/Contents/java/app/burpsuite_community.jar")
-    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.1.0'
+    implementation group: 'net.portswigger.burp.extender', name: 'burp-extender-api', version: '2.3'
+    implementation 'com.github.CoreyD97:BurpExtenderUtilities:c03c1a2a1f'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
+    testCompileOnly files("${System.properties['user.home']}\\AppData\\Local\\Programs\\BurpSuiteCommunity\\burpsuite_community.jar")
+    testCompileOnly group: 'org.mockito', name: 'mockito-core', version: '2.23.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+}
+
+jar{
+    archiveBaseName = project.name
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        (configurations.compileClasspath).collect { it.isDirectory() ? it : zipTree(it) }
+    }{
+        exclude '/test/*'
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+}
+
+task testJar(type: Jar) {
+    archiveBaseName = project.name + "-TEST"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn testClasses
+    dependsOn pmdTest
+    dependsOn pmdMain
+    sourceSets.main.output.each {
+        from it
+    }
+    sourceSets.test.output.each {
+        from it
+    }
+
+    sourceSets.test.runtimeClasspath.each { File f ->
+        if (f.name.endsWith('.jar')) {
+            from zipTree(f)
+        } else {
+            from f
+        }
+    }
+
+}
+
+//Designate jar output directory
+tasks.withType(Jar) {
+    destinationDirectory = file("$rootDir/releases")
 }
 
 //Run JUnit tests using Gradle
@@ -67,6 +87,6 @@ test{
 pmd {
     consoleOutput = true
     toolVersion = "6.21.0"
-    rulePriority = 5
+    rulesMinimumPriority = 5
     ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
 }

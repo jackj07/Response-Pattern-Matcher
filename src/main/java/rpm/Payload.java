@@ -1,9 +1,9 @@
 package rpm;
 
 public class Payload {
-    private String content;
-    private Boolean isRegex;
-    private Boolean active;
+    private final String content;
+    private final Boolean isRegex;
+    private final Boolean active;
 
     public Payload(String content, Boolean isRegex, Boolean active){
         this.content=content;
