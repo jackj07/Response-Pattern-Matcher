@@ -22,16 +22,17 @@ As of v2.0 additional functionality has been added to organise matches. <br/>
 If you highlight items in the Matches tab you can highlight identical matches, as well as delete and export them to a .json file.
 
 # Requirements
-Built using Java 12.0.2, runs on Burp v2.
+Built using: 
+- Oracle OpenJDK 17.0.8
+- burp-extender-api (2.3)
+- Tested on Burp Community Edition 2023.7.1
 
 # Acknowledgements
-<b>Author</b>: Jack Jarvis, NCC Group <br/>
+<b>Author</b>: Jack Jarvis, Bridewell <br/>
 Developed using IntelliJ IDE and the Gradle Build Tool.
 <br/><br/>
 CoreyD97 Burp Extender Utilities:<br/>
 https://github.com/CoreyD97/BurpExtenderUtilities
 <br/><br/>
 For further Burp Extension development please refer to:<br />
-https://portswigger.net/burp/extender/api/ <br />
-https://portswigger.net/burp/extender/writing-your-first-burp-suite-extension <br />
-https://portswigger.net/burp/extender
+https://portswigger.net/burp/documentation/desktop/extensions <br />

@@ -7,7 +7,7 @@ import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
 public class ResultsTableModel extends AbstractTableModel {
-    private List<ResultEntry> results;
+    private final List<ResultEntry> results;
     public ResultsTableModel(List<ResultEntry> results) {
         this.results=results;
     }

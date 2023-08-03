@@ -25,8 +25,8 @@ class JSONParserTests {
             ResultEntry result4 = new ResultEntry(4, 3, new URL("http://test2.com"), requestResponsePersisted, "/body> password is <b>welc0me2</b>", "password");
             ResultEntry result5 = new ResultEntry(5, 1, new URL("http://test3.com"), requestResponsePersisted, "asdasdsdfSDFAHtempsdgdg", "temp");
 
-            //File output = new File("C:\\Users\\consultant\\Response Pattern Matcher\\out\\test\\output.json");
-            File output = new File("/Users/benson/Response-Pattern-Matcher/src/test/resources/output.json");
+            File output = new File("Z:\\Projects\\GitProjects_Working\\Response Pattern Matcher\\out\\test\\resources\\output.json");
+            //File output = new File("/Users/benson/Response-Pattern-Matcher/src/test/resources/output.json");
 
             ArrayList<ResultEntry> results = new ArrayList<>(Arrays.asList(result1, result2, result3, result4, result5));
 
@@ -34,7 +34,7 @@ class JSONParserTests {
 
             JSONParser parser = new JSONParser(mockCallbacks);
 
-            when(mockCallbacks.getToolName(result1.getTool())).thenReturn("repeater");
+            when(mockCallbacks.getToolName(result1.getTool())).thenReturn("intruder");
             when(mockCallbacks.getToolName(result2.getTool())).thenReturn("intruder");
             when(mockCallbacks.getToolName(result3.getTool())).thenReturn("proxy");
             when(mockCallbacks.getToolName(result4.getTool())).thenReturn("repeater");
