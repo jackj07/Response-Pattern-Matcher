@@ -13,17 +13,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MessageProcessor implements Runnable {
-    private int toolFlag;
-    private boolean messageIsRequest;
-    private IHttpRequestResponse messageInfo;
-    private boolean inScopeOnly;
-    private boolean matchOnRequests;
-    private boolean matchOnResponses;
-    private List<Payload> payloads;
-    private List<ResultEntry> results_responses;
-    private List<ResultEntry> results_requests;
-    private ResultsTableModel resultsTableModel_responses;
-    private ResultsTableModel resultsTableModel_requests;
+    private final int toolFlag;
+    private final boolean messageIsRequest;
+    private final IHttpRequestResponse messageInfo;
+    private final boolean inScopeOnly;
+    private final boolean matchOnRequests;
+    private final boolean matchOnResponses;
+    private final List<Payload> payloads;
+    private final List<ResultEntry> results_responses;
+    private final List<ResultEntry> results_requests;
+    private final ResultsTableModel resultsTableModel_responses;
+    private final ResultsTableModel resultsTableModel_requests;
 
     public MessageProcessor(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo, GUI gui) {
         this.toolFlag = toolFlag;
@@ -42,8 +42,8 @@ public class MessageProcessor implements Runnable {
     @Override
     public void run() {
         try {
-            //Check Scope
-            if (!inScopeOnly || ResponsePatternMatcher.callbacks.isInScope(new URL(messageInfo.getHttpService().toString()))) {
+            URL intercepted_url = ResponsePatternMatcher.helpers.analyzeRequest(messageInfo.getHttpService(), messageInfo.getRequest()).getUrl();
+            if (!inScopeOnly || ResponsePatternMatcher.callbacks.isInScope(intercepted_url)) {
 
                 //Responses
                 if(!messageIsRequest && matchOnResponses){
@@ -159,10 +159,6 @@ public class MessageProcessor implements Runnable {
                     }
                 }
             }
-        } catch (MalformedURLException e) {
-            ResponsePatternMatcher.stderror.println("A Malformed URL occurred when checking scope:");
-            ResponsePatternMatcher.stderror.println(e);
-            e.printStackTrace();
         } catch (Exception e){
             ResponsePatternMatcher.stderror.println("An error occurred processing message:");
             ResponsePatternMatcher.stderror.println(e);

@@ -36,7 +36,7 @@ public class ResponsePatternMatcher implements IBurpExtender, ITab, IHttpListene
         contentController = new ContentController();
 
         // keep a reference to our callbacks object
-        this.callbacks = callbacks;
+        ResponsePatternMatcher.callbacks = callbacks;
 
         //Terminal Output
         stdout = new PrintWriter(callbacks.getStdout(), true);

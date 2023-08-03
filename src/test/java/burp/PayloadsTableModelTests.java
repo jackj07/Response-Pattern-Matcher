@@ -2,6 +2,7 @@ package burp;
 
 import com.coreyd97.BurpExtenderUtilities.Preferences;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import rpm.Payload;
 import rpm.model.PayloadsTableModel;
 
@@ -10,7 +11,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 public class PayloadsTableModelTests {
 

@@ -18,7 +18,7 @@ import javax.swing.*;
  *
  */
 public class JHyperlink extends JLabel {
-    private String url;
+    private final String url;
 
     public JHyperlink(Icon image, String url, String tooltip) {
         super(image);

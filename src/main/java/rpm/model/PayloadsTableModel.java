@@ -8,8 +8,8 @@ import java.util.List;
 
 public class PayloadsTableModel extends AbstractTableModel {
 
-    private List<Payload> payloads;
-    private Preferences prefs;
+    private final List<Payload> payloads;
+    private final Preferences prefs;
     public PayloadsTableModel(List<Payload> payloads, Preferences prefs){
         this.payloads = payloads;
         this.prefs = prefs;

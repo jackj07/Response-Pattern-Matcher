@@ -29,18 +29,18 @@ public class GUI {
     private Boolean inScopeOnly;
     private Boolean matchOnResponses;
     private Boolean matchOnRequests;
-    private ResponsePatternMatcher responsePatternMatcher;
+    private final ResponsePatternMatcher responsePatternMatcher;
     private List<Payload> payloads;
-    private List<ResultEntry> results_responses;
-    private List<ResultEntry> results_requests;
+    private final List<ResultEntry> results_responses;
+    private final List<ResultEntry> results_requests;
 
     //Controller
-    private ContentController contentController;
+    private final ContentController contentController;
 
     //Model
     private PayloadsTableModel payloadsTableModel;
-    private ResultsTableModel resultsTableModel_responses;
-    private ResultsTableModel resultsTableModel_requests;
+    private final ResultsTableModel resultsTableModel_responses;
+    private final ResultsTableModel resultsTableModel_requests;
 
     //UI
     private JCheckBox checkBox_isInScope;
@@ -172,11 +172,8 @@ public class GUI {
             if(inScopeOnly == null)inScopeOnly = true;
             checkBox_isInScope = new JCheckBox("In Scope Only", inScopeOnly);
             checkBox_isInScope.addItemListener(e -> {
-                if(e.getStateChange() == ItemEvent.SELECTED) {//checkbox has been selected
-                    inScopeOnly = true;
-                } else {
-                    inScopeOnly = false;
-                }
+                //checkbox has been selected
+                inScopeOnly = e.getStateChange() == ItemEvent.SELECTED;
                 prefs.setSetting("In Scope Only", inScopeOnly);
             });
             panel_wordlist_buttons.add(checkBox_isInScope);
@@ -347,12 +344,7 @@ public class GUI {
                 githubLogo.setPreferredSize(new Dimension(80, 50));
                 panel_github.add(githubLogo);
             }
-            String twitterURL="https://twitter.com/JackJarvis07";
-            JHyperlink twitterLogo = new JHyperlink(new ImageIcon(getClass().getClassLoader().getResource("Twitter_Logo_Blue_42px.png")), twitterURL, twitterURL);
-            if(twitterLogo != null) {
-                twitterLogo.setPreferredSize(new Dimension(80, 50));
-                panel_github.add(twitterLogo);
-            }
+
             panel_about_contents.add(panel_github);
 
             panel_about.add(panel_about_contents);

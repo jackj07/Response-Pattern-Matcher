@@ -6,7 +6,7 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 
 class PayloadTable extends JTable {
-    private ContentController contentController;
+    private final ContentController contentController;
 
     public PayloadTable(TableModel tableModel, ContentController contentController) {
         super(tableModel);
